@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 
+
 def collate_fn(batch):
 
     image, label = zip(*batch)
