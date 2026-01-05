@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 class Real_vs_AI(Dataset):
 
-    def __init__(self,data_dir,transform=None):
+    def __init__(self, data_dir, transform=None):
         """
         Custom dataset for Real vs AI images.
 
@@ -30,25 +30,24 @@ class Real_vs_AI(Dataset):
         self.image_paths = []
         self.labels = []
 
-        label_map = {"AiArtData":1,"RealArt":0}
+        label_map = {"AiArtData": 1, "RealArt": 0}
 
-        for label_name , label in label_map:
+        for label_name, label in label_map:
 
-            folder_path = os.path.join(data_dir,label_name)
-            
+            folder_path = os.path.join(data_dir, label_name)
+
             if not os.path.exists(folder_path):
                 logging.error(f"folder path does not exist {folder_path}")
-                raise  
+                raise
 
             for file_name in os.listdir(folder_path):
-                if file_name.lower().endswith(('.png','.jpeg','.jpg','.gif')):
-                    self.image_paths.append((os.path.join(folder_path,file_name)))
+                if file_name.lower().endswith((".png", ".jpeg", ".jpg", ".gif")):
+                    self.image_paths.append((os.path.join(folder_path, file_name)))
                     self.labels.append(label)
 
     def __len__(self):
         """Return total number of samples."""
         return len(self.image_paths)
-    
 
     def __getitem__(self, index):
         """Load and return a sample from the dataset."""
@@ -61,9 +60,11 @@ class Real_vs_AI(Dataset):
             if self.transform:
                 image = self.transform(image)
 
-            return image , label
-        
+            return image, label
+
         except IndexError:
-            raise IndexError(f"Index {index} out of range for dataset of size {len(self)}")
+            raise IndexError(
+                f"Index {index} out of range for dataset of size {len(self)}"
+            )
         except Exception as e:
             raise RuntimeError(f"Error loading image at index {index}: {e}")
