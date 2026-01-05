@@ -1,9 +1,10 @@
 import os
 import yaml
 import logging
-from torchvision import transforms
+import torch
 from torch.utils.data import random_split
 from src.dataset import Real_vs_AI
+from features.transform import get_resnet50_transform
 from src.dataloader import get_dataloader
 
 
@@ -35,22 +36,20 @@ def main():
     # training config
     training_cnfg = config["training"]
     batch_size = training_cnfg["batch_size"]
-    num_workers = training_cnfg["num_wokers"]
+    num_workers = training_cnfg["num_workers"]
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-        ]
-    )
+    transform = get_resnet50_transform()
 
     dataset = Real_vs_AI(data_dir=data_dir, transform=transform)
+    logging.info("Dataset loader successfully")
 
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
 
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    generator = torch.Generator().manual_seed(42)
+    train_dataset, val_dataset = random_split(
+        dataset, [train_size, val_size], generator=generator
+    )
 
     train_loader = get_dataloader(
         train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers

@@ -32,7 +32,7 @@ class Real_vs_AI(Dataset):
 
         label_map = {"AiArtData": 1, "RealArt": 0}
 
-        for label_name, label in label_map:
+        for label_name, label in label_map.items():
 
             folder_path = os.path.join(data_dir, label_name)
 
@@ -44,6 +44,11 @@ class Real_vs_AI(Dataset):
                 if file_name.lower().endswith((".png", ".jpeg", ".jpg", ".gif")):
                     self.image_paths.append((os.path.join(folder_path, file_name)))
                     self.labels.append(label)
+
+        logging.info(f"Total samples: {len(self.labels)}")
+        logging.info(
+            f"AI: {sum(self.labels)} | Real: {len(self.labels)-sum(self.labels)}"
+        )
 
     def __len__(self):
         """Return total number of samples."""
