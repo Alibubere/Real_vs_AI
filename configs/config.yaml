@@ -8,3 +8,8 @@ training:
   lr: 0.00001
   weight_decay: 0.005
   resume_from_checkpoint: True
+
+checkpoint:
+  dir: checkpoints/
+  latest: latest.pth
+  best: best.pth

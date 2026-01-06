@@ -6,8 +6,8 @@ from torch.utils.data import random_split
 from src.dataset import Real_vs_AI
 from src.features.transform import get_resnet50_transform
 from src.dataloader import get_dataloader
-from src.models.train_utils import train_one_epoch
-from src.models.model import get_model , get_optimizer
+from src.models.model import get_model, get_optimizer
+from src.models.train import train_loop
 
 
 def setup_logging():
@@ -42,7 +42,16 @@ def main():
     resume = training_cnfg["resume_from_checkpoint"]
     lr = training_cnfg["lr"]
     weight_decay = training_cnfg["weight_decay"]
+    num_epochs = training_cnfg["num_epochs"]
 
+    # checkpoint config
+    checkpoint = config["checkpoint"]
+    checkpoint_dir = checkpoint["dir"]
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    latest = checkpoint["latest"]
+    best = checkpoint["best"]
+    latest_path = os.path.join(checkpoint_dir, latest)
+    best_path = os.path.join(checkpoint_dir, best)
 
     transform = get_resnet50_transform()
 
@@ -67,9 +76,20 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = get_model(device=device)
-    optimizer = get_optimizer(model=model,lr=lr,weight_decay=weight_decay)
+    optimizer = get_optimizer(model=model, lr=lr, weight_decay=weight_decay)
 
-    train_one_epoch(model=model,dataloader=train_loader,optimizer=optimizer,device=device,epoch=1)
+    train_loop(
+        resume=resume,
+        model=model,
+        optimizer=optimizer,
+        device=device,
+        num_epochs=num_epochs,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        latest_path=latest_path,
+        best_path=best_path,
+    )
+
 
 if __name__ == "__main__":
     main()

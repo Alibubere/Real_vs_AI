@@ -14,6 +14,8 @@ def train_one_epoch(
 
     criterion = torch.nn.CrossEntropyLoss()
     running_loss = 0.0
+    correct = 0
+    total = 0
 
     for batch_idx, (images, labels) in enumerate(dataloader):
 
@@ -31,8 +33,13 @@ def train_one_epoch(
             optimizer.step()
 
             running_loss += loss.item()
+            
+            # Calculate accuracy
+            preds = torch.argmax(logits, dim=1)
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
 
-            if batch_idx % 10 == 0:
+            if batch_idx % 90 == 0:
                 logging.info(
                     f"Epoch [{epoch}] Batch [{batch_idx}/{len(dataloader)}] "
                     f"loss: {loss.item():.4f} "
@@ -42,7 +49,7 @@ def train_one_epoch(
             logging.error(f"Runtime error encountered at batch {batch_idx}: {e}")
             continue
 
-    return running_loss / len(dataloader)
+    return running_loss / len(dataloader), correct / total
 
 
 def val_one_epoch(
@@ -74,7 +81,7 @@ def val_one_epoch(
 
                 running_loss += loss.item()
 
-                if batch_idx % 10 == 0:
+                if batch_idx % 20 == 0:
                     logging.info(
                         f"Epoch [{epoch}] Batch [{batch_idx}/{len(dataloader)}] "
                         f"loss: {loss.item():.4f} "

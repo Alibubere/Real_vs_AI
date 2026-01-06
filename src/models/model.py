@@ -8,12 +8,15 @@ def get_model(device: torch.device = None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = models.resnet50(weights= models.ResNet50_Weights.IMAGENET1K_V1)
+    model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
 
     model.fc = torch.nn.Linear(model.fc.in_features, 2)
 
     for param in model.parameters():
         param.requires_grad = False
+        
+    for param in model.layer4.parameters():
+        param.requires_grad = True
 
     for param in model.fc.parameters():
         param.requires_grad = True
@@ -32,12 +35,13 @@ def get_optimizer(model, lr, weight_decay):
     return optimizer
 
 
-def save_checkpoint(model, optimizer, epoch, path):
+def save_checkpoint(model, optimizer, epoch, path, best_val_loss):
 
     checkpoint = {
         "model_state": model.state_dict(),
         "optimizer_state": optimizer.state_dict(),
         "epoch": epoch,
+        "best_val_loss": best_val_loss,
     }
 
     torch.save(checkpoint, path)
@@ -45,13 +49,15 @@ def save_checkpoint(model, optimizer, epoch, path):
     logging.info(f"Checkpoint saved to {path}")
 
 
-def load_checkpoint(model, optimizer, path, device="cuda"):
+def load_checkpoint(model, optimizer, path, device: torch.device):
 
     checkpoint = torch.load(path, map_location=device)
 
     model.load_state_dict(checkpoint["model_state"])
     optimizer.load_state_dict(checkpoint["optimizer_state"])
     start_epoch = checkpoint.get("epoch", 1) + 1
+    best_val_loss = checkpoint.get("best_val_loss")
 
     logging.info(f"Checkpoint loaded from {path}, resuming at epoch {start_epoch}")
-    return model, optimizer, start_epoch
+
+    return model, optimizer, start_epoch, best_val_loss
