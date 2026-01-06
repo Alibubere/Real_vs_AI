@@ -4,8 +4,10 @@ import logging
 import torch
 from torch.utils.data import random_split
 from src.dataset import Real_vs_AI
-from features.transform import get_resnet50_transform
+from src.features.transform import get_resnet50_transform
 from src.dataloader import get_dataloader
+from src.models.train_utils import train_one_epoch
+from src.models.model import get_model , get_optimizer
 
 
 def setup_logging():
@@ -37,6 +39,10 @@ def main():
     training_cnfg = config["training"]
     batch_size = training_cnfg["batch_size"]
     num_workers = training_cnfg["num_workers"]
+    resume = training_cnfg["resume_from_checkpoint"]
+    lr = training_cnfg["lr"]
+    weight_decay = training_cnfg["weight_decay"]
+
 
     transform = get_resnet50_transform()
 
@@ -59,6 +65,11 @@ def main():
         val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers
     )
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = get_model(device=device)
+    optimizer = get_optimizer(model=model,lr=lr,weight_decay=weight_decay)
+
+    train_one_epoch(model=model,dataloader=train_loader,optimizer=optimizer,device=device,epoch=1)
 
 if __name__ == "__main__":
     main()

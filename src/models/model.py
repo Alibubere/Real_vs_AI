@@ -8,7 +8,7 @@ def get_model(device: torch.device = None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = models.resnet50(pretrained=True)
+    model = models.resnet50(weights= models.ResNet50_Weights.IMAGENET1K_V1)
 
     model.fc = torch.nn.Linear(model.fc.in_features, 2)
 

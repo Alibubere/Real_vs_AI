@@ -4,3 +4,7 @@ data_dir: "Art"
 training:
   batch_size: 4
   num_workers: 4
+  num_epochs: 20
+  lr: 0.00001
+  weight_decay: 0.005
+  resume_from_checkpoint: True
